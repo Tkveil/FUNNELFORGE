@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FunnelForge — AI Funnel Generator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --black: #0a0a0a;
+  --white: #f5f0e8;
+  --gold: #d4a843;
+  --gold-dim: #d4a84322;
+  --gray: #1a1a1a;
+  --gray2: #252525;
+  --muted: #555;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--black); color: var(--white); }
+body { font-family: 'DM Sans', sans-serif; }
+input, textarea, select { font-size: 16px !important; font-family: 'DM Sans', sans-serif; }
+textarea { resize: none; }
+button { cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+#app { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── HEADER ── */
+.header {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-Content: space-between;
+  border-bottom: 1px solid #1a1a1a;
+  position: sticky;
+  top: 0;
+  background: var(--black);
+  z-index: 100;
+}
+.logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; }
+.logo span { color: var(--gold); }
+.header-actions { display: flex; gap: 10px; align-items: center; }
+.hdr-btn {
+  background: none; border: 1px solid #2a2a2a; border-radius: 8px;
+  padding: 7px 14px; color: var(--muted); font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  transition: all 0.2s;
+}
+.hdr-btn:hover { border-color: var(--gold); color: var(--gold); }
+.hdr-btn.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+/* ── TABS ── */
+.tab-bar {
+  display: flex;
+  border-bottom: 1px solid #1a1a1a;
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 24px;
+}
+.tab {
+  padding: 14px 0;
+  margin-right: 28px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* ── PROFILE PANEL ── */
+.profile-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 32px 24px 80px;
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+}
+.profile-wrap.visible { display: flex; }
+.profile-intro {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+  padding: 16px;
+  background: var(--gray);
+  border-radius: 10px;
+  border-left: 3px solid var(--gold);
+}
+
+/* ── HISTORY PANEL ── */
+.history-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 32px 24px 80px;
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+.history-wrap.visible { display: flex; }
+.history-empty { font-size: 14px; color: var(--muted); text-align: center; padding: 40px 0; font-style: italic; }
+.history-card {
+  background: var(--gray);
+  border: 1px solid #222;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.history-card:hover { border-color: var(--gold); }
+.history-date { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.history-product { font-size: 15px; color: var(--white); font-weight: 500; }
+.history-preview { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.history-actions { display: flex; gap: 10px; margin-top: 4px; }
+.hist-btn {
+  background: none; border: 1px solid #333; border-radius: 6px;
+  padding: 5px 12px; color: var(--muted); font-size: 12px;
+  transition: all 0.2s;
+}
+.hist-btn:hover { border-color: var(--gold); color: var(--gold); }
+.hist-btn.danger:hover { border-color: #c0392b; color: #c0392b; }
+
+/* ── FORM ── */
+.form-section { display: block; }
+.form-section.hidden { display: none; }
+
+.hero {
+  padding: 48px 24px 32px;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
+}
+.hero-eyebrow { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(44px, 9vw, 76px);
+  line-height: 0.95;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+.hero-title em { color: var(--gold); font-style: normal; }
+.hero-sub { font-size: 15px; color: var(--muted); line-height: 1.7; max-width: 460px; margin: 0 auto; }
+
+/* Profile loaded banner */
+.profile-banner {
+  max-width: 680px;
+  margin: 0 auto 0;
+  width: 100%;
+  padding: 0 24px;
+  display: none;
+}
+.profile-banner.visible { display: block; }
+.profile-banner-inner {
+  background: var(--gold-dim);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--gold);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 24px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field-group { display: flex; flex-direction: column; gap: 8px; }
+.field-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold); font-weight: 600; }
+.field-sub { font-size: 13px; color: var(--muted); margin-top: -4px; }
+.field-input {
+  background: var(--gray);
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 13px 16px;
+  color: var(--white);
+  width: 100%;
+  transition: border-color 0.2s;
+  line-height: 1.6;
+}
+.field-input:focus { border-color: var(--gold); outline: none; }
+.field-input::placeholder { color: #3a3a3a; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.fw-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+.fw-badge {
+  background: var(--gray2); border: 1px solid #333; border-radius: 6px;
+  padding: 6px 12px; font-size: 12px; color: var(--muted);
+  cursor: pointer; transition: all 0.2s;
+}
+.fw-badge.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+.gen-btn {
+  background: var(--gold); color: var(--black); border: none;
+  border-radius: 10px; padding: 17px 32px; font-size: 16px;
+  font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  width: 100%; transition: opacity 0.2s;
+}
+.gen-btn:hover { opacity: 0.9; }
+.gen-btn:disabled { opacity: 0.4; cursor: default; }
+
+.save-profile-btn {
+  background: none; border: 1px solid #333; border-radius: 10px;
+  padding: 13px 32px; font-size: 14px; color: var(--muted);
+  width: 100%; transition: all 0.2s;
+}
+.save-profile-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+.framework-note { font-size: 11px; color: #2a2a2a; text-align: center; font-style: italic; }
+
+/* ── LOADING ── */
+.loading-wrap {
+  display: none; flex-direction: column; align-items: center;
+  gap: 20px; padding: 80px 24px;
+  max-width: 680px; margin: 0 auto; width: 100%;
+}
+.loading-wrap.visible { display: flex; }
+.loading-bar { width: 100%; height: 2px; background: #1a1a1a; border-radius: 2px; overflow: hidden; position: relative; }
+.loading-bar::after {
+  content: ''; position: absolute; left: -100%; top: 0;
+  height: 100%; width: 60%; background: var(--gold); border-radius: 2px;
+  animation: load 1.5s ease-in-out infinite;
+}
+@keyframes load { 0% { left: -60%; } 100% { left: 110%; } }
+.loading-step { font-size: 14px; color: var(--muted); font-style: italic; text-align: center; }
+
+/* ── OUTPUT ── */
+.output-wrap {
+  max-width: 760px; margin: 0 auto; width: 100%;
+  padding: 0 24px 80px; display: none; flex-direction: column; gap: 20px;
+}
+.output-wrap.visible { display: flex; }
+.output-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 24px 0 16px; border-bottom: 1px solid #1a1a1a;
+}
+.output-title { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 1px; }
+.output-actions { display: flex; gap: 10px; }
+.restart-btn {
+  background: none; border: 1px solid #333; border-radius: 8px;
+  padding: 8px 16px; color: var(--muted); font-size: 13px;
+  transition: all 0.2s;
+}
+.restart-btn:hover { border-color: #555; color: var(--white); }
+
+.funnel-section { background: var(--gray); border: 1px solid #222; border-radius: 14px; overflow: hidden; }
+.section-header {
+  padding: 14px 18px; border-bottom: 1px solid #1a1a1a;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.section-num { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 0.15em; color: var(--gold); }
+.section-name { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-left: 10px; }
+.copy-btn {
+  background: none; border: 1px solid #333; border-radius: 6px;
+  padding: 5px 12px; color: var(--muted); font-size: 12px; transition: all 0.2s;
+}
+.copy-btn:hover { border-color: var(--gold); color: var(--gold); }
+.copy-btn.copied { border-color: #2ecc71; color: #2ecc71; }
+.section-content { padding: 18px 20px; font-size: 15px; line-height: 1.75; color: #c8c0b0; white-space: pre-wrap; }
+
+.copy-all-btn {
+  background: var(--gray2); border: 1px solid #333; border-radius: 10px;
+  padding: 14px 24px; color: var(--white); font-size: 14px; font-weight: 500;
+  width: 100%; transition: all 0.2s;
+}
+.copy-all-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+@media (max-width: 480px) {
+  .field-row { grid-template-columns: 1fr; }
+  .hero { padding: 32px 20px 20px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="header">
+    <div class="logo">Funnel<span>Forge</span></div>
+    <div class="header-actions">
+      <button class="hdr-btn" id="profile-tab-btn" onclick="showTab('profile')">My Business</button>
+      <button class="hdr-btn" id="history-tab-btn" onclick="showTab('history')">History</button>
+      <button class="hdr-btn" id="new-btn" onclick="showTab('form')">+ New Funnel</button>
+    </div>
+  </div>
+
+  <!-- ── PROFILE TAB ── -->
+  <div class="profile-wrap" id="profile-panel">
+    <div class="profile-intro">
+      💡 Save your business profile once — FunnelForge pre-fills your info every time so you only change what's different per campaign.
+    </div>
+    <div class="field-group">
+      <div class="field-label">What do you sell?</div>
+      <textarea class="field-input" id="p-product" rows="3" placeholder="Describe your core offer..."></textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Who buys it?</div>
+      <textarea class="field-input" id="p-customer" rows="3" placeholder="Your ideal customer..."></textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Their #1 pain</div>
+      <textarea class="field-input" id="p-pain" rows="2" placeholder="The thing that keeps them up at night..."></textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Your unique mechanism</div>
+      <textarea class="field-input" id="p-mechanism" rows="2" placeholder="Why your thing works when others don't..."></textarea>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Price point</div>
+      <input class="field-input" type="text" id="p-price" placeholder="e.g. $997/mo, $2,500, Free">
+    </div>
+    <button class="gen-btn" onclick="saveProfile()">Save Business Profile</button>
+    <button class="save-profile-btn" onclick="clearProfile()">Clear profile</button>
+  </div>
+
+  <!-- ── HISTORY TAB ── -->
+  <div class="history-wrap" id="history-panel">
+    <div id="history-list"></div>
+  </div>
+
+  <!-- ── FORM TAB ── -->
+  <div class="form-section" id="form-section">
+    <div class="hero">
+      <div class="hero-eyebrow">Wizard of Ads · $100M Leads · 5 minutes</div>
+      <h1 class="hero-title">Your funnel.<br><em>Done.</em></h1>
+      <p class="hero-sub">Answer a few questions. Get a complete copy-paste funnel built on the frameworks that actually work.</p>
+    </div>
+
+    <div class="profile-banner" id="profile-banner">
+      <div class="profile-banner-inner">
+        <span>✓ Business profile loaded — just update what's different for this campaign</span>
+        <button onclick="showTab('profile')" style="background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;text-decoration:underline;">Edit</button>
+      </div>
+    </div>
+
+    <div class="form-wrap">
+      <div class="field-group">
+        <div class="field-label">What do you sell?</div>
+        <div class="field-sub">Be specific. The more specific, the better the copy.</div>
+        <textarea class="field-input" id="product" rows="3" placeholder="e.g. I help real estate agents get 10+ qualified buyer leads per month without cold calling..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Who buys it?</div>
+        <div class="field-sub">Paint a picture of the person — not a demographic, a human.</div>
+        <textarea class="field-input" id="customer" rows="3" placeholder="e.g. Agents doing $5-10M/year, frustrated they're stuck trading time for money..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Their #1 pain</div>
+        <div class="field-sub">The thing that keeps them up at night.</div>
+        <textarea class="field-input" id="pain" rows="2" placeholder="e.g. They work 60-hour weeks but income feels unpredictable..."></textarea>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Your unique mechanism</div>
+        <div class="field-sub">Why does your thing work when others don't?</div>
+        <textarea class="field-input" id="mechanism" rows="2" placeholder="e.g. We only target homeowners within 5 miles of recent sales..."></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <div class="field-label">Price point</div>
+          <input class="field-input" type="text" id="price" placeholder="e.g. $997/mo, Free">
+        </div>
+        <div class="field-group">
+          <div class="field-label">This campaign's offer</div>
+          <input class="field-input" type="text" id="leadmagnet" placeholder="e.g. Free audit, strategy call">
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Tone</div>
+        <div class="fw-bar" id="tone-bar">
+          <div class="fw-badge active" onclick="selectTone(this,'Direct and confident')">Direct</div>
+          <div class="fw-badge" onclick="selectTone(this,'Conversational and warm')">Conversational</div>
+          <div class="fw-badge" onclick="selectTone(this,'Bold and aggressive')">Bold</div>
+          <div class="fw-badge" onclick="selectTone(this,'Professional and credible')">Professional</div>
+          <div class="fw-badge" onclick="selectTone(this,'Story-driven and emotional')">Story-driven</div>
+        </div>
+      </div>
+      <button class="gen-btn" onclick="generate()">⚡ Generate My Funnel</button>
+      <button class="save-profile-btn" onclick="saveFromForm()">Save these answers as my business profile</button>
+      <div class="framework-note">Wizard of Ads · $100M Leads · FunnelForge AI</div>
+    </div>
+  </div>
+
+  <!-- ── LOADING ── -->
+  <div class="loading-wrap" id="loading">
+    <div class="loading-bar"></div>
+    <div class="loading-step" id="loading-step">Analyzing your offer...</div>
+  </div>
+
+  <!-- ── OUTPUT ── -->
+  <div class="output-wrap" id="output">
+    <div class="output-header">
+      <div class="output-title">Your Funnel</div>
+      <div class="output-actions">
+        <button class="restart-btn" onclick="newFunnel()">+ New campaign</button>
+        <button class="restart-btn" onclick="showTab('history')">History</button>
+      </div>
+    </div>
+    <div id="funnel-sections"></div>
+    <button class="copy-all-btn" onclick="copyAll()">Copy entire funnel to clipboard</button>
+    <div class="framework-note">Wizard of Ads · $100M Leads · FunnelForge AI</div>
+  </div>
+
+</div>
+
+<script>
+// ── STATE ──
+let tone = 'Direct and confident';
+let generatedFunnel = '';
+let currentFormData = {};
+
+const STEPS = [
+  'Analyzing your offer...',
+  'Finding the emotional hook...',
+  'Building your lead magnet...',
+  'Writing your headline...',
+  'Crafting the email sequence...',
+  'Finalizing your funnel...',
+];
+
+const SYSTEM = `You are a world-class direct response copywriter trained in two frameworks:
+
+1. WIZARD OF ADS (Roy Williams): Lead with emotion, not logic. The brain buys emotionally and justifies logically after. Find the one true feeling behind the purchase. Use specificity. Rhythm and cadence matter. The best ads feel like talking to one person.
+
+2. $100M LEADS (Alex Hormozi): The lead magnet must solve ONE specific painful problem completely, for free. The core offer must maximize: value delivered, certainty of result, speed of result — while minimizing: effort required, time to result. The CTA should feel inevitable, not pushy.
+
+Combine both: emotion-first copy (Wizard) with an irresistible offer structure (Hormozi).
+
+Output a complete funnel with these exact labeled sections:
+
+1. HEADLINE
+2. SUBHEADLINE
+3. LEAD MAGNET
+4. BODY COPY
+5. BULLET POINTS
+6. CALL TO ACTION
+7. FOLLOW-UP EMAIL 1
+8. FOLLOW-UP EMAIL 2
+9. FOLLOW-UP EMAIL 3
+
+Be specific. Use their actual words back to them. No generic marketing speak. Apply the specified tone throughout.`;
+
+// ── STORAGE ──
+function saveProfile() {
+  const profile = {
+    product: document.getElementById('p-product').value.trim(),
+    customer: document.getElementById('p-customer').value.trim(),
+    pain: document.getElementById('p-pain').value.trim(),
+    mechanism: document.getElementById('p-mechanism').value.trim(),
+    price: document.getElementById('p-price').value.trim(),
+  };
+  localStorage.setItem('ff_profile', JSON.stringify(profile));
+  loadProfileIntoForm();
+  showTab('form');
+  showBanner();
+}
+
+function loadProfile() {
+  try {
+    const p = JSON.parse(localStorage.getItem('ff_profile') || 'null');
+    if (!p) return;
+    document.getElementById('p-product').value = p.product || '';
+    document.getElementById('p-customer').value = p.customer || '';
+    document.getElementById('p-pain').value = p.pain || '';
+    document.getElementById('p-mechanism').value = p.mechanism || '';
+    document.getElementById('p-price').value = p.price || '';
+  } catch {}
+}
+
+function loadProfileIntoForm() {
+  try {
+    const p = JSON.parse(localStorage.getItem('ff_profile') || 'null');
+    if (!p) return;
+    if (p.product) document.getElementById('product').value = p.product;
+    if (p.customer) document.getElementById('customer').value = p.customer;
+    if (p.pain) document.getElementById('pain').value = p.pain;
+    if (p.mechanism) document.getElementById('mechanism').value = p.mechanism;
+    if (p.price) document.getElementById('price').value = p.price;
+  } catch {}
+}
+
+function saveFromForm() {
+  const profile = {
+    product: document.getElementById('product').value.trim(),
+    customer: document.getElementById('customer').value.trim(),
+    pain: document.getElementById('pain').value.trim(),
+    mechanism: document.getElementById('mechanism').value.trim(),
+    price: document.getElementById('price').value.trim(),
+  };
+  localStorage.setItem('ff_profile', JSON.stringify(profile));
+  loadProfile();
+  showBanner();
+  alert('Profile saved!');
+}
+
+function clearProfile() {
+  localStorage.removeItem('ff_profile');
+  ['p-product','p-customer','p-pain','p-mechanism','p-price'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  hideBanner();
+}
+
+function showBanner() {
+  const p = JSON.parse(localStorage.getItem('ff_profile') || 'null');
+  if (p && p.product) document.getElementById('profile-banner').classList.add('visible');
+}
+
+function hideBanner() {
+  document.getElementById('profile-banner').classList.remove('visible');
+}
+
+// ── HISTORY ──
+function saveToHistory(formData, funnel) {
+  try {
+    const history = JSON.parse(localStorage.getItem('ff_history') || '[]');
+    history.unshift({
+      id: Date.now(),
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      product: formData.product.slice(0, 80),
+      leadmagnet: formData.leadmagnet,
+      funnel,
+    });
+    localStorage.setItem('ff_history', JSON.stringify(history.slice(0, 10)));
+  } catch {}
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  try {
+    const history = JSON.parse(localStorage.getItem('ff_history') || '[]');
+    if (history.length === 0) {
+      list.innerHTML = '<div class="history-empty">No funnels yet. Generate your first one.</div>';
+      return;
+    }
+    list.innerHTML = history.map(h => `
+      <div class="history-card">
+        <div class="history-date">${h.date}</div>
+        <div class="history-product">${h.product}${h.leadmagnet ? ' — ' + h.leadmagnet : ''}</div>
+        <div class="history-actions">
+          <button class="hist-btn" onclick="loadHistoryFunnel(${h.id})">View funnel</button>
+          <button class="hist-btn danger" onclick="deleteHistory(${h.id})">Delete</button>
+        </div>
+      </div>
+    `).join('');
+  } catch {
+    list.innerHTML = '<div class="history-empty">Could not load history.</div>';
+  }
+}
+
+function loadHistoryFunnel(id) {
+  try {
+    const history = JSON.parse(localStorage.getItem('ff_history') || '[]');
+    const h = history.find(x => x.id === id);
+    if (!h) return;
+    generatedFunnel = h.funnel;
+    renderFunnel(h.funnel);
+    showOutput();
+  } catch {}
+}
+
+function deleteHistory(id) {
+  try {
+    const history = JSON.parse(localStorage.getItem('ff_history') || '[]');
+    const updated = history.filter(x => x.id !== id);
+    localStorage.setItem('ff_history', JSON.stringify(updated));
+    renderHistory();
+  } catch {}
+}
+
+// ── TABS ──
+function showTab(tab) {
+  document.getElementById('form-section').classList.toggle('hidden', tab !== 'form');
+  document.getElementById('profile-panel').classList.toggle('visible', tab === 'profile');
+  document.getElementById('history-panel').classList.toggle('visible', tab === 'history');
+  document.getElementById('loading').classList.remove('visible');
+  document.getElementById('output').classList.remove('visible');
+
+  document.getElementById('profile-tab-btn').classList.toggle('active', tab === 'profile');
+  document.getElementById('history-tab-btn').classList.toggle('active', tab === 'history');
+  document.getElementById('new-btn').classList.toggle('active', tab === 'form');
+
+  if (tab === 'history') renderHistory();
+}
+
+function showOutput() {
+  document.getElementById('form-section').classList.add('hidden');
+  document.getElementById('profile-panel').classList.remove('visible');
+  document.getElementById('history-panel').classList.remove('visible');
+  document.getElementById('loading').classList.remove('visible');
+  document.getElementById('output').classList.add('visible');
+}
+
+// ── GENERATE ──
+function selectTone(el, t) {
+  document.querySelectorAll('.fw-badge').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  tone = t;
+}
+
+function cycleSteps() {
+  let i = 0;
+  return setInterval(() => {
+    document.getElementById('loading-step').textContent = STEPS[i % STEPS.length];
+    i++;
+  }, 1800);
+}
+
+async function generate() {
+  const product = document.getElementById('product').value.trim();
+  const customer = document.getElementById('customer').value.trim();
+  const pain = document.getElementById('pain').value.trim();
+  const mechanism = document.getElementById('mechanism').value.trim();
+  const price = document.getElementById('price').value.trim();
+  const leadmagnet = document.getElementById('leadmagnet').value.trim();
+
+  if (!product || !customer || !pain) {
+    alert('Fill in at least the first three fields.');
+    return;
+  }
+
+  currentFormData = { product, customer, pain, mechanism, price, leadmagnet };
+
+  document.getElementById('form-section').classList.add('hidden');
+  document.getElementById('loading').classList.add('visible');
+  document.getElementById('output').classList.remove('visible');
+
+  const interval = cycleSteps();
+
+  const userMsg = `Generate a complete funnel for:
+
+WHAT I SELL: ${product}
+WHO BUYS IT: ${customer}
+THEIR #1 PAIN: ${pain}
+MY UNIQUE MECHANISM: ${mechanism || 'Not specified'}
+PRICE POINT: ${price || 'Not specified'}
+THIS CAMPAIGN'S OFFER: ${leadmagnet || 'Not specified'}
+TONE: ${tone}
+
+Apply Wizard of Ads emotional principles and Hormozi $100M Leads offer framework. Make it specific to this business.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': 'sk-ant-placeholder',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 4000,
+        system: SYSTEM,
+        messages: [{ role: 'user', content: userMsg }],
+      }),
+    });
+
+    const data = await res.json();
+    let text = '';
+    if (Array.isArray(data?.content)) {
+      for (const b of data.content) if (b?.text) { text = b.text; break; }
+    }
+    if (!text) text = JSON.stringify(data).slice(0, 500);
+
+    clearInterval(interval);
+    generatedFunnel = text;
+    saveToHistory(currentFormData, text);
+    renderFunnel(text);
+    showOutput();
+
+  } catch (e) {
+    clearInterval(interval);
+    document.getElementById('loading').classList.remove('visible');
+    document.getElementById('form-section').classList.remove('hidden');
+    alert(`Error: ${e.message}`);
+  }
+}
+
+const SECTION_NAMES = [
+  'HEADLINE','SUBHEADLINE','LEAD MAGNET','BODY COPY',
+  'BULLET POINTS','CALL TO ACTION',
+  'FOLLOW-UP EMAIL 1','FOLLOW-UP EMAIL 2','FOLLOW-UP EMAIL 3'
+];
+
+function renderFunnel(text) {
+  const container = document.getElementById('funnel-sections');
+  container.innerHTML = '';
+
+  const sections = [];
+  let remaining = text;
+
+  for (let i = 0; i < SECTION_NAMES.length; i++) {
+    const name = SECTION_NAMES[i];
+    const nextName = SECTION_NAMES[i + 1];
+    const pattern = new RegExp(`\\d*\\.?\\s*${name}[:\\-\\s]*`, 'i');
+    const match = remaining.match(pattern);
+    if (!match) continue;
+
+    const start = remaining.indexOf(match[0]) + match[0].length;
+    let end = remaining.length;
+
+    if (nextName) {
+      const np = new RegExp(`\\d*\\.?\\s*${nextName}[:\\-\\s]*`, 'i');
+      const nm = remaining.slice(start).match(np);
+      if (nm) end = start + remaining.slice(start).indexOf(nm[0]);
+    }
+
+    const content = remaining.slice(start, end).trim();
+    sections.push({ name, content, num: i + 1 });
+    remaining = remaining.slice(end);
+  }
+
+  if (sections.length === 0) {
+    sections.push({ name: 'YOUR FUNNEL', content: text, num: 1 });
+  }
+
+  sections.forEach(s => {
+    const safe = s.content.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+    const div = document.createElement('div');
+    div.className = 'funnel-section';
+    div.innerHTML = `
+      <div class="section-header">
+        <div>
+          <span class="section-num">0${s.num}</span>
+          <span class="section-name">${s.name}</span>
+        </div>
+        <button class="copy-btn" onclick="copySection(this, \`${safe}\`)">Copy</button>
+      </div>
+      <div class="section-content">${s.content}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function copySection(btn, text) {
+  navigator.clipboard?.writeText(text).then(() => {
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyAll() {
+  navigator.clipboard?.writeText(generatedFunnel).then(() => {
+    const btn = document.querySelector('.copy-all-btn');
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => btn.textContent = 'Copy entire funnel to clipboard', 2000);
+  });
+}
+
+function newFunnel() {
+  document.getElementById('leadmagnet').value = '';
+  showTab('form');
+}
+
+// ── INIT ──
+window.onload = () => {
+  loadProfile();
+  loadProfileIntoForm();
+  showBanner();
+};
+</script>
+</body>
+</html>
