@@ -659,26 +659,14 @@ TONE: ${tone}
 Apply Wizard of Ads emotional principles and Hormozi $100M Leads offer framework. Make it specific to this business.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+   const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': 'sk-ant-placeholder',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 4000,
-        system: SYSTEM,
-        messages: [{ role: 'user', content: userMsg }],
-      }),
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ system: SYSTEM, message: userMsg }),
     });
 
     const data = await res.json();
-    let text = '';
-    if (Array.isArray(data?.content)) {
-      for (const b of data.content) if (b?.text) { text = b.text; break; }
+    let text = data.text || '';
     }
     if (!text) text = JSON.stringify(data).slice(0, 500);
 
